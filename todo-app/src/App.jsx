@@ -52,7 +52,7 @@ function handleSaveData(currTodos) {
 
 useEffect(() => {
   if (!localStorage || !localStorage.getItem('todo-app')) { return }
-  console.log('here')
+  
   let db = JSON.parse(localStorage.getItem('todo-app'))
   setTodos(db.todos)
   }, [])

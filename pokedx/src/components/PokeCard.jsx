@@ -101,7 +101,7 @@ export default function PokeCard(props) {
 
         // if we fetch from the api, make sure to save the information to the cache for next time
     }, [selectedPokemon])
-    if (loading) {
+    if (loading || !data) {
         return (
             <div>
                 <h4>Loading...</h4>

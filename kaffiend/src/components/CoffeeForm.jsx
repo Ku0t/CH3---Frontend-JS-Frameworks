@@ -1,19 +1,80 @@
 import { coffeeOptions } from "../utils";
 import { useState } from "react";
+import Modal from "./Modal";
+import Authentication from "./Authentication";
+import { useAuth } from "../context/AuthContext";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase";
 
-export default function CoffeeForm() {
+export default function CoffeeForm(props) {
+    const { isAuthenticated } = props
+    const [showModal, setShowModal] = useState(false)
     const [selectedCoffee, setSelectedCoffee] = useState(null)
     const [showCoffeeTypes, setShowCoffeeTypes] = useState(false)
     const [coffeeCost, setCoffeeCost] = useState(0)
     const [hour, setHour] = useState(0)
     const [min, setMin] = useState(0)
 
-    function handleSubmitForm() {
-        console.log(selectedCoffee, coffeeCost, hour, min)
+    const { globalData, setGlobalData, globalUser } = useAuth()
+
+    async function handleSubmitForm() {
+        if (!isAuthenticated) {
+            setShowModal(true)
+            return
+        }
+
+        // define a guard clause that only submits a form if it is completed
+        if (!selectedCoffee) {
+            return
+        }
+
+        try {
+            // then we're going to create a new data object
+            const newGlobalData = {
+                ...(globalData || {})
+            }
+
+            const nowTime = Date.now() 
+            const timeToSubtract = (hour * 60 *60 *1000) + (min * 60 * 100)
+            const timestamp = nowTime - timeToSubtract
+
+            const newData = {
+                name: selectedCoffee,
+                cost: coffeeCost
+            }
+            newGlobalData[timestamp] = newData
+            // console.log(timestamp, selectedCoffee, coffeeCost)
+
+            // update the global state
+            setGlobalData(newGlobalData)
+
+            // persist the data in the firebase firestore
+            const userRef = doc(db, 'users', globalUser.uid)
+            const res = await setDoc(userRef, {
+                [timestamp]: newData
+            }, {merge: true})
+
+            setSelectedCoffee(null)
+            setHour(0)
+            setMin(0)
+            setCoffeeCost(0)
+        } catch (err) {
+            console.log(err.message)
+        }
+
+    }   
+
+    function handleCloseModal() {
+        setShowModal(false)
     }
 
     return (
         <>
+            {showModal && (
+                <Modal handleCloseModal={handleCloseModal}>
+                    <Authentication handleCloseModal={handleCloseModal} />
+                </Modal>
+            )}
             <div className="section-header">
                 <i className="fa-solid fa-pencil"></i>
                 <h2>Start Tracking Today</h2>

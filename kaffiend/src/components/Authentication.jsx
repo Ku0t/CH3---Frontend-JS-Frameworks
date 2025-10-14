@@ -35,6 +35,12 @@ export default function Authentication(props) {
         }
     }
 
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            return handleAuthenticate()
+        }
+    } 
+
     return (
         <>
             <h2 className="sign-up-text">{isRegistration ? 'Sign Up' : 'Login'}</h2>
@@ -43,7 +49,7 @@ export default function Authentication(props) {
                 <p>❌ {error}</p>
             )}
             <input value={email} onChange={(e) => { setEmail(e.target.value) }} placeholder="Email" />
-            <input value={password} onChange={(e) => { setPassword(e.target.value) }} placeholder="**********" type="password" />
+            <input value={password} onChange={(e) => { setPassword(e.target.value) }} placeholder="**********" type="password" onKeyDown={handleKeyDown} />
             <button onClick={handleAuthenticate}><p>{isAuthenticating ? 'Authenticating...' : 'Submit'}</p></button>
             <hr />
             <div className="register-content">
